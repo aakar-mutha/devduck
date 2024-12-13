@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { getChat,saveChat,updateChat } from '@/lib/indexedDB'
+import { respondToMessages } from '@/components/staticAPI'
 
 interface ChatMessage {
   role: string;
@@ -21,15 +23,12 @@ export default function Chat({ chatId }: ChatProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // Clear messages when switching chats
     setMessages([]);
     setInput('');
     
-    // Load messages for the selected chat
     if (chatId) {
       setIsLoading(true);
-      fetch(`/api/chat?id=${chatId}`)
-        .then(response => response.json())
+      getChat(chatId)
         .then(chat => {
           if (chat && chat.messages) {
             setMessages(chat.messages);
@@ -38,37 +37,25 @@ export default function Chat({ chatId }: ChatProps) {
         .catch(error => console.error('Error loading chat:', error))
         .finally(() => setIsLoading(false));
     }
-  }, [chatId]) // Only depend on chatId changes
+  }, [chatId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim()) return
-
+    if (!input.trim() || !chatId) return
+  
     const userMessage = { role: 'user', content: input }
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
-
+  
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: updatedMessages,
-          chatId,
-        }),
-      })
+      await saveChat({ id: chatId, messages: updatedMessages });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const newMessages = [...updatedMessages, { role: 'assistant', content: data.message }]
+      const data = await respondToMessages(updatedMessages);
+      const newMessages = [...updatedMessages, { role: 'assistant', content: data }]
       setMessages(newMessages)
+      await saveChat({ id: chatId, messages: newMessages });
     } catch (error) {
       console.error('Error:', error)
       setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, there was an error processing your request.' }])
@@ -76,6 +63,7 @@ export default function Chat({ chatId }: ChatProps) {
       setIsLoading(false)
     }
   }
+  
 
   return (
     <Card className="w-full max-w-2xl">
@@ -84,13 +72,16 @@ export default function Chat({ chatId }: ChatProps) {
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[60vh] pr-4">
-          {messages.map((m, index) => (
-            <div key={index} className={`mb-4 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
-              <span className={`inline-block p-2 rounded-lg ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                {m.content}
-              </span>
-            </div>
-          ))}
+        {messages.map((m, index) => (
+          <div key={index} className={`mb-4 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
+            <span 
+              className={`inline-block p-2 rounded-lg whitespace-pre-wrap ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+            >
+              {m.content}
+            </span>
+          </div>
+        ))}
+
           {isLoading && (
             <div className="text-center">
               <span className="inline-block p-2 rounded-lg bg-muted">Thinking...</span>

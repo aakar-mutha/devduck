@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Chat from '@/components/Chat'
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getAllChats, saveChat } from '@/lib/indexedDB'
+import { getAllChats, saveChat, updateChat } from '@/lib/indexedDB'
 
 interface Chat {
   id?: number;
@@ -21,9 +21,7 @@ export default function Home() {
 
   const loadChats = async () => {
     try {
-      const response = await fetch('/api/chat');
-      if (!response.ok) throw new Error('Failed to fetch chats');
-      const loadedChats = await response.json();
+      const loadedChats = await getAllChats();
       setChats(loadedChats);
     } catch (error) {
       console.error('Error loading chats:', error);
@@ -35,6 +33,15 @@ export default function Home() {
     const newChatId = await saveChat(newChat)
     setChats(prev => [...prev, { ...newChat, id: newChatId }])
     setSelectedChatId(newChatId)
+  }
+
+  const updateChatMessages = async (chatId: number, messages: { role: string; content: string }[]) => {
+    const updatedChat = chats.find(chat => chat.id === chatId);
+    if (updatedChat) {
+      updatedChat.messages = messages;
+      await updateChat(updatedChat);
+      setChats(prev => prev.map(chat => chat.id === chatId ? updatedChat : chat));
+    }
   }
 
   return (
@@ -56,7 +63,7 @@ export default function Home() {
         <Button className="w-full mt-4" onClick={createNewChat}>New Chat</Button>
       </div>
       <div className="w-3/4 p-4">
-        <Chat chatId={selectedChatId} />
+        <Chat chatId={selectedChatId} updateChatMessages={updateChatMessages} />
       </div>
     </div>
   )

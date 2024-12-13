@@ -27,6 +27,9 @@ export function openDatabase() {
         const chatStore = db.createObjectStore('chats', { keyPath: 'id', autoIncrement: true });
         chatStore.createIndex('by-id', 'id');
       },
+    }).catch(error => {
+      console.error('Error opening database:', error);
+      throw error;
     });
   }
   return dbPromise;
@@ -50,4 +53,9 @@ export async function saveChat(chat: Chat): Promise<number> {
 export async function deleteChat(id: number): Promise<void> {
   const db = await openDatabase();
   return db.delete('chats', id);
+}
+
+export async function updateChat(chat: Chat) {
+  const db = await dbPromise;
+  return db.put('chats', chat);
 }
