@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevDuck
 
-## Getting Started
+DevDuck is an innovative desktop application that serves as an intelligent personal assistant, ideation helper, and AI therapist. Built with Next.js and Tauri, it leverages Qualcomm's Neural Processing Units (NPUs) for powerful offline processing.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **AI-Powered Assistant**: Helps with ideation, internet searches, and provides AI therapy sessions.
+- **Offline-First**: Utilizes Qualcomm NPUs for local content generation, ensuring privacy and reduced latency.
+- **Extensible Plugin System**: Supports custom tools and plugins for expanded functionality.
+- **Cross-Platform**: Available on Windows, macOS, and Linux.
+- **LM Studio Integration**: Leverages LM Studio for local AI model execution and customization.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key Capabilities
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Ideation Helper**: Assists in generating and developing ideas for various projects.
+- **Internet Search**: Performs web searches and aggregates information.
+- **AI Therapist**: Offers conversational interface for mental health support.
+- **Offline Processing**: Generates most content locally for enhanced privacy and speed.
+- **Custom Plugins**: Allows developers to create and integrate new tools.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technical Stack
 
-## Learn More
+- **Frontend**: Next.js for a modern, responsive UI
+- **Backend**: Tauri for cross-platform desktop app development
+- **AI Processing**: Qualcomm NPUs for local AI computations
+- **Model Integration**: LM Studio for accessing and running various AI models
 
-To learn more about Next.js, take a look at the following resources:
+## LM Studio Integration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+DevDuck integrates with LM Studio to enhance its AI capabilities:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Run large language models locally
+- Access a wide range of open-source models
+- Utilize OpenAI-compatible API for seamless interaction
+- Chat with local documents for research and ideation
+- Customize model parameters for specific tasks
