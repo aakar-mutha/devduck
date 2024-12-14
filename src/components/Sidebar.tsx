@@ -19,7 +19,9 @@ interface SidebarProps {
 
 export function Sidebar({ onSelectChat, selectedChatId }: SidebarProps) {
     const [chats, setChats] = useState<Chat[]>([])
-
+    if (selectedChatId === undefined && chats.length > 0) {
+        onSelectChat(chats[0].id!)
+    }
     useEffect(() => {
         loadChats()
     }, [])
@@ -27,6 +29,9 @@ export function Sidebar({ onSelectChat, selectedChatId }: SidebarProps) {
     const loadChats = async () => {
         const loadedChats = await getAllChats()
         setChats(loadedChats)
+        if (loadedChats.length === 0) {
+            createNewChat()
+        }
     }
 
     const createNewChat = async () => {
@@ -34,6 +39,17 @@ export function Sidebar({ onSelectChat, selectedChatId }: SidebarProps) {
         const newChatId = await saveChat(newChat)
         setChats(prev => [...prev, { ...newChat, id: newChatId }])
         onSelectChat(newChatId)
+    }
+
+    const handleDeleteChat = async (chatId: number) => {
+        await deleteChat(chatId)
+        const updatedChats = chats.filter(c => c.id !== chatId)
+        setChats(updatedChats)
+        if (updatedChats.length === 0) {
+            createNewChat()
+        } else if (chatId === selectedChatId) {
+            onSelectChat(updatedChats[0].id!)
+        }
     }
 
     return (
@@ -44,7 +60,7 @@ export function Sidebar({ onSelectChat, selectedChatId }: SidebarProps) {
             <ScrollArea className="flex-grow">
                 <div className="p-4 space-y-2">
                     {chats.map((chat) => (
-                        <div className="flex justify-between items-center w-full">
+                        <div key={chat.id} className="flex justify-between items-center w-full">
                             <Button
                                 variant={chat.id === selectedChatId ? "secondary" : "ghost"}
                                 className="flex-grow justify-start"
@@ -59,15 +75,13 @@ export function Sidebar({ onSelectChat, selectedChatId }: SidebarProps) {
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     if (chat.id) {
-                                        deleteChat(chat.id);
-                                        setChats(prev => prev.filter(c => c.id !== chat.id));
+                                        handleDeleteChat(chat.id);
                                     }
                                 }}
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
-
                     ))}
                 </div>
             </ScrollArea>

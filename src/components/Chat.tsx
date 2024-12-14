@@ -23,6 +23,7 @@ export default function Chat({ chatId }: ChatProps) {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMessages([]);
@@ -41,11 +42,13 @@ export default function Chat({ chatId }: ChatProps) {
     }
   }, [chatId])
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
-  }, [messages]);
+    scrollToBottom()
+  }, [messages])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,29 +76,32 @@ export default function Chat({ chatId }: ChatProps) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background max-h-[98vh]">
+    <div className="flex flex-col h-screen bg-background max-h-[98.5vh]">
       <div className="flex-1 overflow-hidden">
-        <ScrollArea ref={scrollAreaRef} className=" p-4">
-          {messages.map((m, index) => (
-            <div key={index} className={`mb-4 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`rounded-lg p-3 max-w-[60%] ${
-                  m.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
-              >
-                <p className="whitespace-pre-wrap">{m.content}</p>
+        <ScrollArea className="h-full p-4">
+          <div className="space-y-4">
+            {messages.map((m, index) => (
+              <div key={index} className={`mb-4 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`rounded-lg p-3 max-w-[60%] ${
+                    m.role === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{m.content}</p>
+                </div>
               </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start mb-4">
-              <div className="rounded-lg p-3 bg-secondary text-secondary-foreground">
-                <p>Thinking...</p>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start mb-4">
+                <div className="rounded-lg p-3 bg-secondary text-secondary-foreground">
+                  <p>Thinking...</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </ScrollArea>
       </div>
       <div className="p-4 border-t">
