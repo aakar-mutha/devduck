@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { getChat,saveChat,updateChat } from '@/lib/indexedDB'
+import { getChat, saveChat, updateChat } from '@/lib/indexedDB'
 import { respondToMessages } from '@/components/staticAPI'
+import { Send } from 'lucide-react'
 
 interface ChatMessage {
   role: string;
@@ -21,6 +22,7 @@ export default function Chat({ chatId }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setMessages([]);
@@ -38,6 +40,12 @@ export default function Chat({ chatId }: ChatProps) {
         .finally(() => setIsLoading(false));
     }
   }, [chatId])
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,43 +71,47 @@ export default function Chat({ chatId }: ChatProps) {
       setIsLoading(false)
     }
   }
-  
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle>Chat {chatId ? `#${chatId}` : ''}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[60vh] pr-4">
-        {messages.map((m, index) => (
-          <div key={index} className={`mb-4 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
-            <span 
-              className={`inline-block p-2 rounded-lg whitespace-pre-wrap ${m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
-            >
-              {m.content}
-            </span>
-          </div>
-        ))}
-
+    <div className="flex flex-col h-screen bg-background max-h-[98vh]">
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea ref={scrollAreaRef} className=" p-4">
+          {messages.map((m, index) => (
+            <div key={index} className={`mb-4 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`rounded-lg p-3 max-w-[60%] ${
+                  m.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground'
+                }`}
+              >
+                <p className="whitespace-pre-wrap">{m.content}</p>
+              </div>
+            </div>
+          ))}
           {isLoading && (
-            <div className="text-center">
-              <span className="inline-block p-2 rounded-lg bg-muted">Thinking...</span>
+            <div className="flex justify-start mb-4">
+              <div className="rounded-lg p-3 bg-secondary text-secondary-foreground">
+                <p>Thinking...</p>
+              </div>
             </div>
           )}
         </ScrollArea>
-      </CardContent>
-      <CardFooter>
-        <form onSubmit={handleSubmit} className="flex w-full space-x-2">
+      </div>
+      <div className="p-4 border-t">
+        <form onSubmit={handleSubmit} className="flex space-x-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
             className="flex-grow"
           />
-          <Button type="submit" disabled={isLoading}>Send</Button>
+          <Button type="submit" size="icon" disabled={isLoading}>
+            <Send className="h-4 w-4" />
+          </Button>
         </form>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }
+
